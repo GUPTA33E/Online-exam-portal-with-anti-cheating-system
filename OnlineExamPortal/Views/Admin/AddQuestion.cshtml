@@ -1,0 +1,74 @@
+@model OnlineExamPortal.Models.ViewModels.QuestionViewModel
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Add Question" : "Edit Question";
+}
+
+<div class="container" style="max-width:700px">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="ManageQuestions" asp-route-examId="@Model.ExamId"
+           class="btn btn-outline-secondary btn-sm me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h3 class="fw-bold mb-0" style="color:var(--dark)">
+            <i class="fas fa-@(Model.Id == 0 ? "plus" : "edit") me-2" style="color:var(--primary)"></i>
+            @ViewData["Title"]
+        </h3>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <form asp-action="@(Model.Id == 0 ? "AddQuestion" : "EditQuestion")" method="post">
+                <input asp-for="Id" type="hidden"/>
+                <input asp-for="ExamId" type="hidden"/>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                <div class="mb-4">
+                    <label asp-for="QuestionText" class="form-label fw-semibold">Question *</label>
+                    <textarea asp-for="QuestionText" class="form-control" rows="3"
+                              placeholder="Enter your question here..."></textarea>
+                    <span asp-validation-for="QuestionText" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3 p-3 rounded" style="background:#f8faff;border:1.5px solid #e0e7ff">
+                    <p class="fw-semibold mb-3"><i class="fas fa-list-ul me-2 text-primary"></i>Answer Options</p>
+                    @foreach (var opt in new[] { ("A","OptionA","success"), ("B","OptionB","info"), ("C","OptionC","warning"), ("D","OptionD","secondary") })
+                    {
+                        <div class="mb-2">
+                            <div class="input-group">
+                                <span class="input-group-text fw-bold text-@opt.Item3">@opt.Item1</span>
+                                <input name="@opt.Item2" value="@(Model.GetType().GetProperty(opt.Item2)?.GetValue(Model))"
+                                       class="form-control" placeholder="Option @opt.Item1" required/>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="CorrectAnswer" class="form-label fw-semibold">Correct Answer *</label>
+                        <select asp-for="CorrectAnswer" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                        <span asp-validation-for="CorrectAnswer" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Marks" class="form-label fw-semibold">Marks</label>
+                        <input asp-for="Marks" type="number" class="form-control" min="1" max="10"/>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Save Question
+                    </button>
+                    <a asp-action="ManageQuestions" asp-route-examId="@Model.ExamId"
+                       class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

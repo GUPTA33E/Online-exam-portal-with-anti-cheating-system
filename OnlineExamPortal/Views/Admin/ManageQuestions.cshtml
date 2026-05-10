@@ -1,0 +1,86 @@
+@model List<OnlineExamPortal.Models.Question>
+@{
+    ViewData["Title"] = "Manage Questions";
+    var exam = (OnlineExamPortal.Models.Exam)ViewBag.Exam;
+}
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <a asp-action="Exams" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h3 class="fw-bold mb-0" style="color:var(--dark)">
+                <i class="fas fa-question-circle me-2" style="color:var(--primary)"></i>Questions
+            </h3>
+            <p class="text-muted mb-0 small">
+                @exam.Title &nbsp;·&nbsp;
+                <i class="fas fa-clock me-1"></i>@exam.DurationMinutes min &nbsp;·&nbsp;
+                <span class="badge bg-info text-dark">@Model.Count Questions</span>
+            </p>
+        </div>
+        <a asp-action="AddQuestion" asp-route-examId="@exam.Id" class="btn btn-primary ms-auto">
+            <i class="fas fa-plus me-2"></i>Add Question
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No questions yet</h5>
+            <a asp-action="AddQuestion" asp-route-examId="@exam.Id" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i>Add First Question
+            </a>
+        </div>
+    }
+
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        var q = Model[i];
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-start gap-3 w-100">
+                        <div class="question-number">@(i + 1)</div>
+                        <div class="w-100">
+                            <p class="fw-semibold mb-2">@q.QuestionText</p>
+                            <div class="row g-2">
+                                @foreach (var opt in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
+                                {
+                                    <div class="col-md-6">
+                                        <span class="@(opt.Item1 == q.CorrectAnswer ? "badge bg-success me-1" : "badge bg-secondary me-1")">
+                                            @opt.Item1
+                                        </span>
+                                        @opt.Item2
+                                        @if (opt.Item1 == q.CorrectAnswer)
+                                        {
+                                            <i class="fas fa-check-circle text-success ms-1"></i>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <small class="text-muted mt-1 d-block">
+                                <i class="fas fa-star me-1"></i>Marks: @q.Marks &nbsp;·&nbsp;
+                                Correct Answer: <strong class="text-success">Option @q.CorrectAnswer</strong>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1 ms-3">
+                        <a asp-action="EditQuestion" asp-route-id="@q.Id"
+                           class="btn btn-sm btn-outline-warning" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form asp-action="DeleteQuestion" method="post"
+                              onsubmit="return confirm('Delete this question?')">
+                            <input type="hidden" name="id" value="@q.Id"/>
+                            <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

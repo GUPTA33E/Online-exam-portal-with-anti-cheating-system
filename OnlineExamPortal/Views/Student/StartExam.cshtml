@@ -1,0 +1,223 @@
+@model OnlineExamPortal.Models.ViewModels.ExamAttemptViewModel
+@{
+    ViewData["Title"] = Model.Exam.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Warning banner for violations -->
+<div id="warning-banner">
+    ⚠ WARNING: Violation detected! Further violations will auto-submit your exam.
+</div>
+
+<div class="container" style="max-width:860px">
+    <!-- Sticky header with timer -->
+    <div class="card mb-4" style="position:sticky;top:70px;z-index:100">
+        <div class="card-body py-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h5 class="fw-bold mb-0">@Model.Exam.Title</h5>
+                <small class="text-muted">@Model.Questions.Count Questions &nbsp;·&nbsp; @Model.Exam.DurationMinutes Minutes</small>
+            </div>
+            <div class="text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-clock me-1"></i>Time Remaining</div>
+                <div id="timer-display">--:--</div>
+            </div>
+            <div>
+                <span id="warning-count-badge" class="badge bg-warning text-dark d-none">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Warnings: <span id="warning-count">0</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam form -->
+    <form id="examForm" asp-controller="Student" asp-action="SubmitExam" method="post">
+        <input type="hidden" name="examId" value="@Model.Exam.Id"/>
+        <input type="hidden" name="cheatWarnings" id="cheatWarningsInput" value="0"/>
+        <input type="hidden" name="autoSubmitted" id="autoSubmittedInput" value="false"/>
+
+        @for (int i = 0; i < Model.Questions.Count; i++)
+        {
+            var q = Model.Questions[i];
+            <div class="question-card" id="qcard-@q.Id">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="question-number">@(i + 1)</div>
+                    <p class="fw-semibold mb-0 ms-1">@q.QuestionText</p>
+                </div>
+
+                <div class="ps-5">
+                    @foreach (var opt in new[] {
+                        ("A", q.OptionA), ("B", q.OptionB),
+                        ("C", q.OptionC), ("D", q.OptionD) })
+                    {
+                        <div>
+                            <input type="radio" name="answers[@q.Id]" value="@opt.Item1"
+                                   id="q@(q.Id)_@opt.Item1" class="d-none"/>
+                            <label class="option-label" for="q@(q.Id)_@opt.Item1">
+                                <span class="badge bg-secondary me-2">@opt.Item1</span>
+                                @opt.Item2
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="text-center my-4">
+            <button type="button" class="btn btn-success btn-lg px-5"
+                    onclick="confirmSubmit()">
+                <i class="fas fa-paper-plane me-2"></i>Submit Exam
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    // ─── Config ────────────────────────────────────────────────────────
+    const EXAM_DURATION_SECONDS = @Model.Exam.DurationMinutes * 60;
+    const EXAM_ID               = @Model.Exam.Id;
+    const MAX_WARNINGS          = 3;
+    const LOG_URL               = '/Student/LogCheat';
+
+    let warningCount    = 0;
+    let timeLeft        = EXAM_DURATION_SECONDS;
+    let timerInterval   = null;
+    let examSubmitted   = false;
+
+    // ─── Timer ─────────────────────────────────────────────────────────
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                autoSubmit('TimeExpired');
+                return;
+            }
+            timeLeft--;
+            const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+            const s = String(timeLeft % 60).padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.textContent = `${m}:${s}`;
+            if (timeLeft <= 60) display.classList.add('danger');
+        }, 1000);
+    }
+
+    // ─── Warn / Submit helpers ──────────────────────────────────────────
+    function showWarning(message, type) {
+        if (examSubmitted) return;
+        logViolation(type);
+        warningCount++;
+        document.getElementById('cheatWarningsInput').value = warningCount;
+        document.getElementById('warning-count').textContent = warningCount;
+        const badge = document.getElementById('warning-count-badge');
+        badge.classList.remove('d-none');
+
+        const banner = document.getElementById('warning-banner');
+        banner.textContent = `⚠ WARNING ${warningCount}/${MAX_WARNINGS}: ${message}`;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 4000);
+
+        if (warningCount >= MAX_WARNINGS) {
+            autoSubmit(type);
+        }
+    }
+
+    function logViolation(type) {
+        fetch(LOG_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `examId=${EXAM_ID}&violationType=${type}`
+        }).catch(() => {});
+    }
+
+    function autoSubmit(reason) {
+        if (examSubmitted) return;
+        examSubmitted = true;
+        clearInterval(timerInterval);
+        document.getElementById('autoSubmittedInput').value = 'true';
+        alert(`Exam auto-submitted: ${reason}. Your answers have been recorded.`);
+        document.getElementById('examForm').submit();
+    }
+
+    function confirmSubmit() {
+        if (examSubmitted) return;
+        if (confirm('Are you sure you want to submit the exam? You cannot change answers after submission.')) {
+            examSubmitted = true;
+            clearInterval(timerInterval);
+            document.getElementById('examForm').submit();
+        }
+    }
+
+    // ─── Anti-Cheat: Tab / Window visibility ───────────────────────────
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && !examSubmitted) {
+            showWarning('You switched tabs or minimized the window!', 'TabSwitch');
+        }
+    });
+
+    // ─── Anti-Cheat: Disable right-click ──────────────────────────────
+    document.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        showWarning('Right-click is disabled during exams!', 'RightClick');
+    });
+
+    // ─── Anti-Cheat: Disable copy/paste/cut ───────────────────────────
+    ['copy','cut','paste'].forEach(evt => {
+        document.addEventListener(evt, e => {
+            e.preventDefault();
+            showWarning(`${evt.charAt(0).toUpperCase() + evt.slice(1)} is disabled during exams!`, 'CopyPaste');
+        });
+    });
+
+    // ─── Anti-Cheat: Keyboard shortcuts ───────────────────────────────
+    document.addEventListener('keydown', e => {
+        // Block Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+X, F12, PrintScreen
+        const blocked = (e.ctrlKey && ['c','v','a','x','u'].includes(e.key.toLowerCase())) ||
+                        e.key === 'F12' || e.key === 'PrintScreen';
+        if (blocked) {
+            e.preventDefault();
+            showWarning('Keyboard shortcut blocked!', 'CopyPaste');
+        }
+        // Block Escape (full-screen exit attempt)
+        if (e.key === 'Escape') {
+            e.preventDefault();
+        }
+    });
+
+    // ─── Anti-Cheat: Full-screen enforcement ──────────────────────────
+    function requestFullScreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen)           el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && !examSubmitted) {
+            showWarning('You exited full-screen mode! Please go full-screen.', 'FullScreenExit');
+            setTimeout(requestFullScreen, 1500);
+        }
+    });
+
+    // ─── Anti-Cheat: Blur (window loses focus) ────────────────────────
+    window.addEventListener('blur', () => {
+        if (!examSubmitted) {
+            showWarning('Window lost focus! Stay on the exam page.', 'TabSwitch');
+        }
+    });
+
+    // ─── Init ──────────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+        requestFullScreen();
+        startTimer();
+    });
+
+    // Prevent accidental navigation/refresh
+    window.addEventListener('beforeunload', e => {
+        if (!examSubmitted) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+}

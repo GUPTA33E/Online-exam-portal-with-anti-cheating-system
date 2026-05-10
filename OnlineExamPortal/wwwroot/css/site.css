@@ -1,0 +1,218 @@
+/* ======================================================
+   ExamPortal – Custom CSS
+   ====================================================== */
+
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary:    #4f46e5;
+    --primary-d:  #3730a3;
+    --success:    #10b981;
+    --danger:     #ef4444;
+    --warning:    #f59e0b;
+    --info:       #06b6d4;
+    --dark:       #1e1b4b;
+    --light-bg:   #f0f4ff;
+    --card-bg:    #ffffff;
+    --text-main:  #1e293b;
+    --text-muted: #64748b;
+    --radius:     14px;
+    --shadow:     0 4px 24px rgba(79,70,229,.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-bg);
+    color: var(--text-main);
+    min-height: 100vh;
+}
+
+/* ── Navbar ─────────────────────────────────────────── */
+.bg-primary-custom {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%) !important;
+}
+.navbar-brand { font-size: 1.35rem; letter-spacing: .5px; }
+.nav-link { font-weight: 500; opacity: .9; transition: opacity .2s; }
+.nav-link:hover { opacity: 1; }
+
+/* ── Main content ────────────────────────────────────── */
+.main-content { padding: 2rem 1.5rem; min-height: calc(100vh - 64px); }
+
+/* ── Cards ───────────────────────────────────────────── */
+.card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
+    transition: transform .25s, box-shadow .25s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(79,70,229,.18); }
+.card-header {
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+    font-weight: 600;
+}
+
+/* ── Stat cards ──────────────────────────────────────── */
+.stat-card {
+    border-radius: var(--radius);
+    padding: 1.6rem 1.4rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card .stat-icon {
+    position: absolute; right: 1.2rem; top: 50%;
+    transform: translateY(-50%);
+    font-size: 3rem; opacity: .2;
+}
+.stat-card .stat-value { font-size: 2.2rem; font-weight: 700; }
+.stat-card .stat-label { font-size: .85rem; opacity: .85; }
+.bg-grad-purple { background: linear-gradient(135deg,#7c3aed,#4f46e5); }
+.bg-grad-teal   { background: linear-gradient(135deg,#0d9488,#06b6d4); }
+.bg-grad-orange { background: linear-gradient(135deg,#ea580c,#f59e0b); }
+.bg-grad-rose   { background: linear-gradient(135deg,#e11d48,#f43f5e); }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn { border-radius: 10px; font-weight: 500; transition: all .2s; }
+.btn-primary    { background: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-d); border-color: var(--primary-d); transform: translateY(-1px); }
+.btn-success:hover  { transform: translateY(-1px); }
+.btn-danger:hover   { transform: translateY(-1px); }
+.btn-warning:hover  { transform: translateY(-1px); }
+
+/* ── Forms ───────────────────────────────────────────── */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    transition: border-color .2s, box-shadow .2s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+}
+
+/* ── Tables ──────────────────────────────────────────── */
+.table { border-radius: var(--radius); overflow: hidden; }
+.table thead { background: linear-gradient(135deg,var(--primary),var(--primary-d)); color:#fff; }
+.table thead th { font-weight: 600; border: none; }
+.table tbody tr { transition: background .15s; }
+.table tbody tr:hover { background: #f0f4ff; }
+
+/* ── Badges ──────────────────────────────────────────── */
+.badge { border-radius: 8px; font-weight: 500; }
+
+/* ── Auth pages ──────────────────────────────────────── */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+}
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(79,70,229,.18);
+    background: #fff;
+}
+.auth-logo { font-size: 2.5rem; color: var(--primary); }
+
+/* ── Exam room ───────────────────────────────────────── */
+#exam-wrapper {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+.question-card {
+    background: #f8faff;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.5rem;
+    transition: border-color .2s;
+}
+.question-card:hover { border-color: var(--primary); }
+.question-number {
+    background: var(--primary);
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; margin-right: .6rem;
+}
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: .55rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    margin: .4rem 0;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: .95rem;
+}
+.option-label:hover { border-color: var(--primary); background: #f0f4ff; }
+input[type=radio]:checked + .option-label {
+    border-color: var(--primary);
+    background: #eef2ff;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ── Timer ───────────────────────────────────────────── */
+#timer-display {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+}
+#timer-display.danger { color: var(--danger); animation: pulse 1s infinite; }
+@keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:.5; }
+}
+
+/* ── Warning banner ─────────────────────────────────── */
+#warning-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%;
+    background: var(--danger);
+    color: #fff;
+    text-align: center;
+    padding: .8rem;
+    font-weight: 700;
+    z-index: 9999;
+    font-size: 1rem;
+}
+
+/* ── Result page ────────────────────────────────────── */
+.result-circle {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-weight: 700;
+    margin: 0 auto;
+    border: 8px solid;
+}
+.result-circle.pass { border-color: var(--success); color: var(--success); }
+.result-circle.fail { border-color: var(--danger);  color: var(--danger); }
+.result-circle .pct { font-size: 2.4rem; }
+.result-circle .lbl { font-size: .8rem; opacity:.7; }
+
+/* ── Answer review ───────────────────────────────────── */
+.ans-correct { background: #d1fae5; border-left: 4px solid var(--success); border-radius: 8px; padding: .5rem 1rem; }
+.ans-wrong   { background: #fee2e2; border-left: 4px solid var(--danger);  border-radius: 8px; padding: .5rem 1rem; }
+.ans-skip    { background: #fef3c7; border-left: 4px solid var(--warning); border-radius: 8px; padding: .5rem 1rem; }
+
+/* ── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }

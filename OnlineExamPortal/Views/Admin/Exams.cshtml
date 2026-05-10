@@ -1,0 +1,74 @@
+@model List<OnlineExamPortal.Models.Exam>
+@{
+    ViewData["Title"] = "Manage Exams";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold" style="color:var(--dark)">
+            <i class="fas fa-file-alt me-2" style="color:var(--primary)"></i>Manage Exams
+        </h3>
+        <a asp-action="CreateExam" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create Exam
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Duration</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold text-muted">@e.Id</td>
+                        <td class="fw-semibold">@e.Title</td>
+                        <td class="text-muted small">@(e.Description.Length > 50 ? e.Description.Substring(0,50) + "..." : e.Description)</td>
+                        <td><i class="fas fa-clock me-1 text-muted"></i>@e.DurationMinutes min</td>
+                        <td><span class="badge bg-info text-dark">@e.Questions.Count Qs</span></td>
+                        <td>
+                            @if (e.IsActive)
+                            { <span class="badge bg-success">Active</span> }
+                            else
+                            { <span class="badge bg-secondary">Inactive</span> }
+                        </td>
+                        <td class="text-muted small">@e.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <a asp-action="ManageQuestions" asp-route-examId="@e.Id"
+                               class="btn btn-sm btn-outline-primary me-1" title="Questions">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                            <a asp-action="EditExam" asp-route-id="@e.Id"
+                               class="btn btn-sm btn-outline-warning me-1" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form asp-action="DeleteExam" method="post" style="display:inline"
+                                  onsubmit="return confirm('Delete this exam and all its data?')">
+                                <input type="hidden" name="id" value="@e.Id"/>
+                                <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">No exams created yet.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

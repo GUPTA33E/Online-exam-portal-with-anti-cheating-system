@@ -1,0 +1,118 @@
+@model OnlineExamPortal.Models.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:var(--dark)">
+                <i class="fas fa-tachometer-alt me-2" style="color:var(--primary)"></i>Admin Dashboard
+            </h3>
+            <p class="text-muted mb-0">Welcome back, @User.Identity!.Name</p>
+        </div>
+        <a asp-action="CreateExam" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Exam
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card bg-grad-purple">
+                <div class="stat-value">@Model.TotalStudents</div>
+                <div class="stat-label">Registered Students</div>
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card bg-grad-teal">
+                <div class="stat-value">@Model.TotalExams</div>
+                <div class="stat-label">Total Exams</div>
+                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card bg-grad-orange">
+                <div class="stat-value">@Model.TotalAttempts</div>
+                <div class="stat-label">Total Attempts</div>
+                <div class="stat-icon"><i class="fas fa-pen-nib"></i></div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card bg-grad-rose">
+                <div class="stat-value">@Model.AverageScore%</div>
+                <div class="stat-label">Average Score</div>
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Exams -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-file-alt me-2"></i>Recent Exams</span>
+                    <a asp-action="Exams" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Title</th><th>Duration</th><th>Questions</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var e in Model.RecentExams)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@e.Title</td>
+                                <td>@e.DurationMinutes min</td>
+                                <td><span class="badge bg-info">@e.Questions.Count</span></td>
+                                <td>
+                                    @if (e.IsActive)
+                                    { <span class="badge bg-success">Active</span> }
+                                    else
+                                    { <span class="badge bg-secondary">Inactive</span> }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chart-bar me-2"></i>Recent Results</span>
+                    <a asp-action="Results" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var r in Model.RecentResults)
+                        {
+                            string grade = r.Percentage >= 90 ? "A+" : r.Percentage >= 80 ? "A" :
+                                           r.Percentage >= 70 ? "B"  : r.Percentage >= 60 ? "C" :
+                                           r.Percentage >= 40 ? "D"  : "F";
+                            <tr>
+                                <td>@r.User?.Name</td>
+                                <td class="text-muted small">@r.Exam?.Title</td>
+                                <td>@r.Score/@r.TotalMarks (@r.Percentage%)</td>
+                                <td><span class="badge bg-primary">@grade</span></td>
+                                <td>
+                                    @if (r.IsPassed)
+                                    { <span class="badge bg-success">Pass</span> }
+                                    else
+                                    { <span class="badge bg-danger">Fail</span> }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

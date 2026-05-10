@@ -1,0 +1,126 @@
+@model OnlineExamPortal.Models.ViewModels.ResultViewModel
+@{
+    ViewData["Title"] = "My Result";
+    var questions   = (List<OnlineExamPortal.Models.Question>)ViewBag.Questions;
+    var userAnswers = (Dictionary<int, string>)ViewBag.UserAnswers;
+    string passClass = Model.Result.IsPassed ? "pass" : "fail";
+}
+
+<div class="container" style="max-width:800px">
+    <!-- Result card -->
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">@Model.Exam.Title</h4>
+                <p class="text-muted">Submitted on @Model.Result.SubmittedAt.ToString("dd MMMM yyyy, hh:mm tt")</p>
+            </div>
+
+            <!-- Score circle -->
+            <div class="result-circle @passClass mb-4">
+                <div class="pct">@Model.Result.Percentage%</div>
+                <div class="lbl">@(Model.Result.IsPassed ? "PASSED" : "FAILED")</div>
+            </div>
+
+            <!-- Stats row -->
+            <div class="row g-3 text-center mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 rounded" style="background:#f0f4ff">
+                        <div class="fw-bold fs-4 text-primary">@Model.Result.Score/@Model.Result.TotalMarks</div>
+                        <div class="text-muted small">Score</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 rounded" style="background:#f0fdf4">
+                        <div class="fw-bold fs-4 text-success">@Model.CorrectAnswers</div>
+                        <div class="text-muted small">Correct</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 rounded" style="background:#fff1f2">
+                        <div class="fw-bold fs-4 text-danger">@(Model.TotalQuestions - Model.CorrectAnswers)</div>
+                        <div class="text-muted small">Wrong/Skipped</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 rounded" style="background:#fffbeb">
+                        <div class="fw-bold fs-4 text-warning">@Model.Grade</div>
+                        <div class="text-muted small">Grade</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warnings / auto-submit notice -->
+            @if (Model.Result.CheatWarnings > 0)
+            {
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>@Model.Result.CheatWarnings violation(s) were recorded during this exam.
+                        @(Model.Result.AutoSubmitted ? "Exam was auto-submitted due to repeated violations." : "")
+                    </span>
+                </div>
+            }
+
+            <div class="d-flex gap-3 justify-content-center">
+                <a asp-controller="Student" asp-action="Dashboard" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+                <a asp-controller="Student" asp-action="MyResults" class="btn btn-outline-secondary">
+                    <i class="fas fa-trophy me-2"></i>All Results
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answer review -->
+    <h5 class="fw-bold mb-3" style="color:var(--dark)">
+        <i class="fas fa-clipboard-check me-2" style="color:var(--primary)"></i>Answer Review
+    </h5>
+
+    @for (int i = 0; i < questions.Count; i++)
+    {
+        var q = questions[i];
+        userAnswers.TryGetValue(q.Id, out var selected);
+        bool isCorrect = selected?.Equals(q.CorrectAnswer, StringComparison.OrdinalIgnoreCase) == true;
+        bool isSkipped = string.IsNullOrEmpty(selected);
+        string cardClass = isSkipped ? "ans-skip" : (isCorrect ? "ans-correct" : "ans-wrong");
+        string icon = isSkipped ? "minus-circle" : (isCorrect ? "check-circle" : "times-circle");
+        string iconColor = isSkipped ? "text-warning" : (isCorrect ? "text-success" : "text-danger");
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <i class="fas fa-@icon @iconColor fa-lg mt-1"></i>
+                    <div>
+                        <span class="text-muted small">Q@(i+1)</span>
+                        <p class="fw-semibold mb-0">@q.QuestionText</p>
+                    </div>
+                </div>
+
+                <div class="row g-2 ps-4">
+                    @foreach (var opt in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
+                    {
+                        bool isAnswer  = opt.Item1 == q.CorrectAnswer;
+                        bool isStudent = opt.Item1 == selected;
+                        string cls = isAnswer ? "ans-correct" : (isStudent && !isAnswer ? "ans-wrong" : "");
+                        <div class="col-md-6">
+                            <div class="@cls d-flex align-items-center gap-2 p-2 rounded">
+                                <span class="badge @(isAnswer ? "bg-success" : "bg-secondary")">@opt.Item1</span>
+                                @opt.Item2
+                                @if (isAnswer)
+                                { <i class="fas fa-check text-success ms-auto"></i> }
+                                @if (isStudent && !isAnswer)
+                                { <i class="fas fa-times text-danger ms-auto"></i> }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="ps-4 mt-2 small text-muted">
+                    Your answer: <strong>@(isSkipped ? "Not answered" : $"Option {selected}")</strong>
+                    &nbsp;·&nbsp;
+                    Correct: <strong class="text-success">Option @q.CorrectAnswer</strong>
+                </div>
+            </div>
+        </div>
+    }
+</div>

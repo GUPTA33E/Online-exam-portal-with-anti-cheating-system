@@ -1,0 +1,70 @@
+@model List<OnlineExamPortal.Models.Result>
+@{
+    ViewData["Title"] = "My Results";
+}
+
+<div class="container-fluid">
+    <h3 class="fw-bold mb-4" style="color:var(--dark)">
+        <i class="fas fa-trophy me-2" style="color:var(--primary)"></i>My Exam Results
+    </h3>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-clipboard fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No results yet</h5>
+            <a asp-action="Dashboard" class="btn btn-primary mt-2">
+                <i class="fas fa-play me-2"></i>Take an Exam
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var r in Model)
+            {
+                string grade = r.Percentage >= 90 ? "A+" : r.Percentage >= 80 ? "A" :
+                               r.Percentage >= 70 ? "B"  : r.Percentage >= 60 ? "C" :
+                               r.Percentage >= 40 ? "D"  : "F";
+                <div class="col-sm-6 col-xl-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="badge @(r.IsPassed ? "bg-success" : "bg-danger") fs-6">
+                                    @(r.IsPassed ? "PASS" : "FAIL")
+                                </span>
+                                <span class="badge bg-primary">Grade: @grade</span>
+                            </div>
+                            <h6 class="fw-bold">@r.Exam?.Title</h6>
+                            <div class="my-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Score: @r.Score / @r.TotalMarks</span>
+                                    <span>@r.Percentage%</span>
+                                </div>
+                                <div class="progress" style="height:10px;border-radius:10px">
+                                    <div class="progress-bar @(r.IsPassed ? "bg-success" : "bg-danger")"
+                                         style="width:@r.Percentage%"></div>
+                                </div>
+                            </div>
+                            @if (r.CheatWarnings > 0)
+                            {
+                                <div class="small text-warning mb-2">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    @r.CheatWarnings violation(s) recorded
+                                </div>
+                            }
+                            <div class="text-muted small mb-3">
+                                <i class="fas fa-calendar me-1"></i>
+                                @r.SubmittedAt.ToString("dd MMM yyyy, hh:mm tt")
+                            </div>
+                            <a asp-action="MyResult" asp-route-resultId="@r.Id"
+                               class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

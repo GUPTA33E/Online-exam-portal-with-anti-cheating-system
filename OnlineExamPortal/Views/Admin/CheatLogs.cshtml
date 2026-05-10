@@ -1,0 +1,62 @@
+@model List<OnlineExamPortal.Models.CheatLog>
+@{
+    ViewData["Title"] = "Cheat Logs";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold" style="color:var(--dark)">
+            <i class="fas fa-shield-alt me-2" style="color:var(--danger)"></i>Anti-Cheat Violation Logs
+        </h3>
+        <span class="badge bg-danger fs-6">@Model.Count Violations</span>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr><th>#</th><th>Student</th><th>Exam</th><th>Violation Type</th><th>Time</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var log in Model)
+                {
+                    string badgeColor = log.ViolationType switch {
+                        "TabSwitch"      => "danger",
+                        "RightClick"     => "warning",
+                        "CopyPaste"      => "orange",
+                        "FullScreenExit" => "dark",
+                        _                => "secondary"
+                    };
+                    string icon = log.ViolationType switch {
+                        "TabSwitch"      => "external-link-alt",
+                        "RightClick"     => "mouse-pointer",
+                        "CopyPaste"      => "copy",
+                        "FullScreenExit" => "compress-alt",
+                        _                => "exclamation"
+                    };
+                    <tr>
+                        <td class="text-muted">@log.Id</td>
+                        <td class="fw-semibold">@log.User?.Name</td>
+                        <td class="text-muted small">@log.Exam?.Title</td>
+                        <td>
+                            <span class="badge bg-@badgeColor">
+                                <i class="fas fa-@icon me-1"></i>@log.ViolationType
+                            </span>
+                        </td>
+                        <td class="text-muted small">@log.LoggedAt.ToString("dd MMM yy HH:mm:ss")</td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="fas fa-shield-alt fa-3x text-success mb-3 d-block"></i>
+                            <span class="text-muted">No violations detected — all exams were clean!</span>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
